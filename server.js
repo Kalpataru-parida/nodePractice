@@ -3,18 +3,20 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require("mongoose");
 
-
 const app = express()
-
 const httpServer = http.createServer(app);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());                               
 app.use(cors());
 
-const studentRouter = require("./source/api/student/studentRouter");            
+   //   teacher
+const classRouter = require("./source/api/student/studentRouter");
+app.use("/api/student",classRouter);
 
-app.use("/api/studentdb",studentRouter);                                    //  root APIs
+   //   student
+const classrouter = require("./source/api/teacher/teacherRouter");
+app.use("/api/teacher",classrouter);
 
 
 app.use("/", (req, res, next) => {

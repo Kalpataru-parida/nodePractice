@@ -1,7 +1,5 @@
 const Student = require("../../models/student");
 
-// create student documents
-
 
 const createStudent = async (req, res, next) => {
     try{
@@ -29,32 +27,13 @@ const createStudent = async (req, res, next) => {
     }
 };
 
-
-// get student documents by findone
-
-
-const getStudent = async (req, res, next) => {
-    try{
-        const { rollNo } = req.query;
-
-        const student = await Student.findOne({address:'paris'});
-
-        return res.status(200).json(student);
-    }
-    catch {
-        console.log(err);
-        return res.status(500).json(err);
-    }
-}
-
-// find list of student documents
-
+     // find all student documents
 
 const allStudentList = async (req, res, next) => {
     try{
         const { rollNo } = req.query;
 
-        const student = await Student.find({});
+        const student = await Student.find();
 
         return res.status(200).json(student);
     }
@@ -62,35 +41,36 @@ const allStudentList = async (req, res, next) => {
         console.log(err);
         return res.status(500).json(err);
     }
-}
+};
 
+    // get one student documents 
 
-// delete student documents filed
+const getOneStudent = async (req, res, next) => {
+    try{
+        const { rollNo } = req.query;
+        if( rollNo === "" ){
+            return res.status(400).json({error:"Id Value can'nt be Empty"});
+        }
+        const student = await Student.findOne({rollNo});
 
+        return res.status(200).json(student);
+    }
+    catch {
+        console.log(err);
+        return res.status(500).json(err);
+    }
+};
+
+    // delete one student documents 
 
 const deleteStudent = async (req, res, next) => {
     try{
         const { rollNo } = req.body;
+        if( rollNo === "" ){
+            return res.status(400).json({error:"RollNo Value cann't Empty String"});
+        }
 
-        const student = await Student.deleteOne({address:'chicago'});
-
-        return res.status(200).json(student);
-    }
-    catch {
-        console.log(err);
-        return res.status(500).json(err);
-    }
-}
-
-
-// update student documents field
-
-
-const updateStudent = async (req, res, next) => {
-    try{
-        const { rollNo } = req.body;
-
-        const student = await Student.updateOne({name:'sam'},{address:'canbera'});
+        const student = await Student.deleteOne({rollNo});
 
         return res.status(200).json(student);
     }
@@ -98,29 +78,73 @@ const updateStudent = async (req, res, next) => {
         console.log(err);
         return res.status(500).json(err);
     }
-}
+};
 
-// find and update student documents
+    // update student documents field
 
-const findAndUpdateStudent = async (req, res, next) => {
+    const updateStudent = async (req, res, next) => {
+        try {
+          const { rollNo} = req.body;
+          if(rollNo === ""){
+            return res.status(400).json({error:"RollNo Value cann't Empty"});
+        }
+          let student = await Student.findOneAndUpdate({rollNo}, req.body);
+           student = await Student.findOne({rollNo}); 
+          return res.status(200).json(student);
+        } 
+        catch (err) {
+          console.log(err);
+          return res.status(500).json(err);
+        }
+      };
+
+
+    // check how many student are in perticular standards  by using array length
+
+const filterClassStudent = async (req,res,next) => {
     try{
-        
-        const filter = { name:'mona' };
-        const update = { state:'sk' };
-
-        let stdstate = await Student.findOneAndUpdate(filter,update,{
-            new:true
-        });
-
-        stdstate.name;
-        stdstate.password;
-        return res.status(200).json(stdstate);
+       const { standard } = req.query;
+       if(standard === ""){
+        return res.status(400).json({error:"Standard Value cann't Empty"});
     }
-    catch {
+        const student = await Student.find({standard});
+       const response = {totalNumberOfStudent:student.length};
+        return res.status(200).json(response);
+    }
+    catch(err){
         console.log(err);
         return res.status(500).json(err);
     }
-}
+   
+};
+
+    // filer student documents by perticular key name
+
+const filterNameOfStudent = async (req,res,next) =>  {
+    try{
+         
+        const { name } = req.query; 
+        if(name === ""){
+            return res.status(400).json({error:"Name Value cann't Empty String"});
+        }
+
+        const student = await Student.find({name: { $regex: name , $options: '<i>' }});
+        return res.status(200).json(student);
+          
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json(err);
+    }
+};
 
 
-module.exports = {createStudent,getStudent,allStudentList,deleteStudent,updateStudent,findAndUpdateStudent};
+module.exports = {
+    createStudent,
+    getOneStudent,
+    allStudentList,
+    deleteStudent,
+    updateStudent,
+    filterClassStudent,
+    filterNameOfStudent
+};
