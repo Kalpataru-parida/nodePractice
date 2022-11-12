@@ -1,5 +1,8 @@
 const Student = require("../../models/student");
 
+const {authSchema} = require("../../validator/schema");
+ 
+
 
 const createStudent = async (req, res, next) => {
     try{
@@ -37,7 +40,7 @@ const allStudentList = async (req, res, next) => {
 
         return res.status(200).json(student);
     }
-    catch {
+    catch(err) {
         console.log(err);
         return res.status(500).json(err);
     }
@@ -55,7 +58,7 @@ const getOneStudent = async (req, res, next) => {
 
         return res.status(200).json(student);
     }
-    catch {
+    catch (err) {
         console.log(err);
         return res.status(500).json(err);
     }
@@ -74,7 +77,7 @@ const deleteStudent = async (req, res, next) => {
 
         return res.status(200).json(student);
     }
-    catch {
+    catch(err){
         console.log(err);
         return res.status(500).json(err);
     }
@@ -85,14 +88,24 @@ const deleteStudent = async (req, res, next) => {
     const updateStudent = async (req, res, next) => {
         try {
           const { rollNo} = req.body;
-          if(rollNo === ""){
-            return res.status(400).json({error:"RollNo Value cann't Empty"});
-        }
-          let student = await Student.findOneAndUpdate({rollNo}, req.body);
+        //   if(rollNo === ""){
+        //     return res.status(400).json({error:"RollNo Value cann't Empty"});
+        // }
+
+        const result = await authSchema.validate(req.body);
+        console.log(result);
+        const {error} = result
+       if (error !== null){
+         const {details} = error 
+         const message = details.map(i => i.message).join(",")
+         return res.status(400).json({error:message})
+       }
+
+        let student = await Student.findOneAndUpdate({rollNo}, req.body);
            student = await Student.findOne({rollNo}); 
           return res.status(200).json(student);
         } 
-        catch (err) {
+        catch(err) {
           console.log(err);
           return res.status(500).json(err);
         }
